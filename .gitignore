@@ -1,0 +1,7 @@
+logs
+venv
+db
+.vscode
+__pycache__
+out.zip
+*.png
