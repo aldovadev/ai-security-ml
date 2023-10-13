@@ -5,3 +5,5 @@ db
 __pycache__
 out.zip
 *.png
+db_visitor
+db_employee
