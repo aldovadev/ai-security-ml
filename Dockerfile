@@ -28,4 +28,4 @@ RUN /bin/bash -c "source venv/bin/activate && pip install cmake dlib"
 RUN /bin/bash -c "source venv/bin/activate && pip install -r requirements.txt"
 
 # Command to run the FastAPI application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD uvicorn main:app --port=8000 --host=0.0.0.0
