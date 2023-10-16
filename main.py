@@ -8,7 +8,7 @@ import time
 import shutil
 
 import cv2
-from fastapi import FastAPI, File, UploadFile, Form, UploadFile, Response
+from fastapi import FastAPI, File, UploadFile, Form, UploadFile, Response,  Query
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import face_recognition
@@ -70,7 +70,6 @@ async def recognize_employee(file: UploadFile = File(...)):
 
     return {'employee_name': name, 'match_status': match_status, 'status' : 200}
   
-
 @app.post("/visitor/add")
 async def add_visitor(file: UploadFile = File(...), name=None):
     file.filename = f"{uuid.uuid4()}.png"
@@ -90,7 +89,6 @@ async def add_visitor(file: UploadFile = File(...), name=None):
     os.remove(file.filename)
 
     return {'message' : 'Add visitor success', 'name' : name, 'status' : 200}
-  
   
 @app.post("/employee/add")
 async def add_employee(file: UploadFile = File(...), name=None):
@@ -123,6 +121,49 @@ async def reset_visitor():
     except Exception as e:
         return {'message': 'Error resetting visitor database', 'status': 500, 'error': str(e)}
 
+@app.delete("/employee/reset")
+async def reset_employee():
+    try:
+        for filename in os.listdir(EMPLOYEE_PATH):
+            file_path = os.path.join(EMPLOYEE_PATH, filename)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        return {'message': 'Reset employee database success', 'status': 200}
+    except Exception as e:
+        return {'message': 'Error resetting employee database', 'status': 500, 'error': str(e)}
+
+@app.get("/visitor/delete")
+async def delete_visitor(visit_number: str = Query(None)):
+    if not visit_number:
+        return {'message': 'Please provide the "visit_number" query parameter.', 'status': 400}
+
+    try:
+        file_path = os.path.join(VISITOR_PATH, visit_number)
+        if os.path.exists(file_path + ".png") and os.path.isfile(file_path + ".png"):
+            os.remove(file_path + ".png")
+            os.remove(file_path + ".pickle")
+            return {'message': f'Visitor with number {visit_number} has been deleted', 'status': 200}
+        else:
+            return {'message': f'Visitor with number {visit_number} not found', 'status': 404}
+    except Exception as e:
+        return {'message': 'Error deleting visitor file', 'status': 500, 'error': str(e)}
+      
+@app.get("/employee/delete")
+async def delete_employee(employee_id: str = Query(None)):
+    if not employee_id:
+        return {'message': 'Please provide the "employee_id" query parameter.', 'status': 400}
+
+    try:
+        file_path = os.path.join(EMPLOYEE_PATH, employee_id)
+        if os.path.exists(file_path + ".png") and os.path.isfile(file_path + ".png"):
+            os.remove(file_path + ".png")
+            os.remove(file_path + ".pickle")
+            return {'message': f'Employee with id {employee_id} has been deleted', 'status': 200}
+        else:
+            return {'message': f'Employee with id {employee_id} not found', 'status': 404}
+    except Exception as e:
+        return {'message': 'Error deleting employee file', 'status': 500, 'error': str(e)}
+          
 def recognize(img, target):
     # it is assumed there will be at most 1 match in the db
     embeddings_unknown = face_recognition.face_encodings(img)
