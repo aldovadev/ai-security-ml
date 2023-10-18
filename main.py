@@ -8,7 +8,7 @@ import time
 import shutil
 
 import cv2
-from fastapi import FastAPI, File, UploadFile, Form, UploadFile, Response,  Query
+from fastapi import FastAPI, File, UploadFile, Form, UploadFile, Response, Query
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import face_recognition
@@ -40,8 +40,8 @@ async def default():
     # simple way to indicate that the server is running correctly.
     return {'status' : 'Server running properly.'}
 
-@app.post("/visitor/recognize")
-async def recognize_visitor(file: UploadFile = File(...)):
+@app.post("/recognize")
+async def recognize_img(file: UploadFile = File(...)):
 
     file.filename = f"{uuid.uuid4()}.png"
     contents = await file.read()
@@ -50,25 +50,16 @@ async def recognize_visitor(file: UploadFile = File(...)):
     with open(file.filename, "wb") as f:
         f.write(contents)
 
-    name, match_status = recognize(cv2.imread(file.filename), VISITOR_PATH)
+    visitor_name, visitor_match = recognize(cv2.imread(file.filename), VISITOR_PATH)
+    employee_name, employee_match = recognize(cv2.imread(file.filename), EMPLOYEE_PATH)
     os.remove(file.filename)
-
-    return {'visitor_name': name, 'match_status': match_status, 'status' : 200}
-  
-@app.post("/employee/recognize")
-async def recognize_employee(file: UploadFile = File(...)):
-
-    file.filename = f"{uuid.uuid4()}.png"
-    contents = await file.read()
-
-    # example of how you can save the file
-    with open(file.filename, "wb") as f:
-        f.write(contents)
-
-    name, match_status = recognize(cv2.imread(file.filename), EMPLOYEE_PATH)
-    os.remove(file.filename)
-
-    return {'employee_name': name, 'match_status': match_status, 'status' : 200}
+    
+    if visitor_match : 
+      return {'id': visitor_name, 'type': 'visitor', 'match': visitor_match, 'status' : 200}
+    elif employee_match : 
+      return {'id': employee_name, 'type': 'employee', 'match': employee_match, 'status' : 200}
+    else  : 
+      return {'id': "unknown", 'type': 'unknown', 'match': 'false', 'status' : 404}
   
 @app.post("/visitor/add")
 async def add_visitor(file: UploadFile = File(...), name=None):
