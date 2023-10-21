@@ -123,13 +123,13 @@ async def reset_employee():
     except Exception as e:
         return {'message': 'Error resetting employee database', 'status': 500, 'error': str(e)}
 
-@app.get("/visitor/delete")
-async def delete_visitor(visit_number: str = Query(None)):
+@app.delete("/visitor/delete")
+async def delete_visitor(company_id: str = Query(None), visit_number: str = Query(None)):
     if not visit_number:
         return {'message': 'Please provide the "visit_number" query parameter.', 'status': 400}
 
     try:
-        file_path = os.path.join(VISITOR_PATH, visit_number)
+        file_path = os.path.join(VISITOR_PATH, company_id, visit_number)
         if os.path.exists(file_path + ".png") and os.path.isfile(file_path + ".png"):
             os.remove(file_path + ".png")
             os.remove(file_path + ".pickle")
@@ -139,13 +139,13 @@ async def delete_visitor(visit_number: str = Query(None)):
     except Exception as e:
         return {'message': 'Error deleting visitor file', 'status': 500, 'error': str(e)}
       
-@app.get("/employee/delete")
-async def delete_employee(employee_id: str = Query(None)):
+@app.delete("/employee/delete")
+async def delete_employee(company_id: str = Query(None), employee_id: str = Query(None)):
     if not employee_id:
         return {'message': 'Please provide the "employee_id" query parameter.', 'status': 400}
 
     try:
-        file_path = os.path.join(EMPLOYEE_PATH, employee_id)
+        file_path = os.path.join(EMPLOYEE_PATH, company_id, employee_id)
         if os.path.exists(file_path + ".png") and os.path.isfile(file_path + ".png"):
             os.remove(file_path + ".png")
             os.remove(file_path + ".pickle")
