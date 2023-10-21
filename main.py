@@ -41,8 +41,12 @@ async def default():
     return {'status' : 'Server running properly.'}
 
 @app.post("/recognize")
-async def recognize_img(file: UploadFile = File(...)):
-
+async def recognize_img(file: UploadFile = File(...), company_id= None):
+    if not os.path.exists(os.path.join(VISITOR_PATH, company_id)):
+      os.mkdir(os.path.join(VISITOR_PATH, company_id))
+    if not os.path.exists(os.path.join(EMPLOYEE_PATH, company_id)):
+      os.mkdir(os.path.join(EMPLOYEE_PATH, company_id))
+    
     file.filename = f"{uuid.uuid4()}.png"
     contents = await file.read()
 
@@ -50,19 +54,28 @@ async def recognize_img(file: UploadFile = File(...)):
     with open(file.filename, "wb") as f:
         f.write(contents)
 
-    visitor_name, visitor_match = recognize(cv2.imread(file.filename), VISITOR_PATH)
-    employee_name, employee_match = recognize(cv2.imread(file.filename), EMPLOYEE_PATH)
+    visitor_name, visitor_match = recognize(cv2.imread(file.filename), os.path.join(VISITOR_PATH, company_id))
+    employee_name, employee_match = recognize(cv2.imread(file.filename), os.path.join(EMPLOYEE_PATH, company_id))
     os.remove(file.filename)
     
     if visitor_match : 
-      return {'id': visitor_name, 'type': 'visitor', 'match': visitor_match, 'status' : 200}
+      return {'id': visitor_name, "company_id" : company_id, 'type': 'visitor', 'match': visitor_match, 'status' : 200}
     elif employee_match : 
-      return {'id': employee_name, 'type': 'employee', 'match': employee_match, 'status' : 200}
+      return {'id': employee_name,  "company_id" : company_id,  'type': 'employee', 'match': employee_match, 'status' : 200}
     else  : 
-      return {'id': "unknown", 'type': 'unknown', 'match': 'false', 'status' : 404}
+      return {'id': "unknown",  "company_id" : company_id, 'type': 'unknown', 'match': 'false', 'status' : 404}
   
 @app.post("/visitor/add")
-async def add_visitor(file: UploadFile = File(...), name=None):
+async def add_visitor(file: UploadFile = File(...), company_id=None, visit_number=None):
+  
+    if not company_id:
+        return {'message': 'Please provide the {company_id} query parameter.', 'status': 400}
+    if not visit_number:
+        return {'message': 'Please provide the {visit_number} query parameter.', 'status': 400}
+  
+    if not os.path.exists(os.path.join(VISITOR_PATH, company_id)):
+      os.mkdir(os.path.join(VISITOR_PATH, company_id))
+
     file.filename = f"{uuid.uuid4()}.png"
     contents = await file.read()
 
@@ -70,19 +83,28 @@ async def add_visitor(file: UploadFile = File(...), name=None):
     with open(file.filename, "wb") as f:
         f.write(contents)
 
-    shutil.copy(file.filename, os.path.join(VISITOR_PATH, '{}.png'.format(name)))
+    shutil.copy(file.filename, os.path.join(VISITOR_PATH, company_id, '{}.png'.format(visit_number)))
 
     embeddings = face_recognition.face_encodings(cv2.imread(file.filename))
 
-    file_ = open(os.path.join(VISITOR_PATH, '{}.pickle'.format(name)), 'wb')
+    file_ = open(os.path.join(VISITOR_PATH, company_id, '{}.pickle'.format(visit_number)), 'wb')
     pickle.dump(embeddings, file_)
 
     os.remove(file.filename)
 
-    return {'message' : 'Add visitor success', 'name' : name, 'status' : 200}
+    return {'message' : 'Add visitor success', 'name' : visit_number, 'status' : 200}
   
 @app.post("/employee/add")
-async def add_employee(file: UploadFile = File(...), name=None):
+async def add_employee(file: UploadFile = File(...), company_id=None, employee_id=None):
+  
+    if not company_id:
+        return {'message': 'Please provide the {company_id} query parameter.', 'status': 400}
+    if not employee_id:
+        return {'message': 'Please provide the {employee_id} query parameter.', 'status': 400}
+  
+    if not os.path.exists(os.path.join(VISITOR_PATH, company_id)):
+      os.mkdir(os.path.join(VISITOR_PATH, company_id))
+  
     file.filename = f"{uuid.uuid4()}.png"
     contents = await file.read()
 
@@ -90,16 +112,16 @@ async def add_employee(file: UploadFile = File(...), name=None):
     with open(file.filename, "wb") as f:
         f.write(contents)
 
-    shutil.copy(file.filename, os.path.join(EMPLOYEE_PATH, '{}.png'.format(name)))
+    shutil.copy(file.filename, os.path.join(EMPLOYEE_PATH, company_id, '{}.png'.format(employee_id)))
 
     embeddings = face_recognition.face_encodings(cv2.imread(file.filename))
 
-    file_ = open(os.path.join(EMPLOYEE_PATH, '{}.pickle'.format(name)), 'wb')
+    file_ = open(os.path.join(EMPLOYEE_PATH, company_id, '{}.pickle'.format(employee_id)), 'wb')
     pickle.dump(embeddings, file_)
 
     os.remove(file.filename)
 
-    return {'message' : 'Add employee success', 'name' : name, 'status' : 200}
+    return {'message' : 'Add employee success', 'name' : employee_id, 'status' : 200}
   
 @app.delete("/visitor/reset")
 async def reset_visitor():
@@ -124,9 +146,14 @@ async def reset_employee():
         return {'message': 'Error resetting employee database', 'status': 500, 'error': str(e)}
 
 @app.delete("/visitor/delete")
-async def delete_visitor(company_id: str = Query(None), visit_number: str = Query(None)):
+async def delete_visitor(company_id: None, visit_number: None):
+    if not os.path.exists(os.path.join(VISITOR_PATH, company_id)):
+      return {'message': 'This {visit_number} not found.', 'status': 400}
+
+    if not company_id:
+        return {'message': 'Please provide the {company_id} query parameter.', 'status': 400}
     if not visit_number:
-        return {'message': 'Please provide the "visit_number" query parameter.', 'status': 400}
+        return {'message': 'Please provide the {visit_number} query parameter.', 'status': 400}
 
     try:
         file_path = os.path.join(VISITOR_PATH, company_id, visit_number)
@@ -140,9 +167,14 @@ async def delete_visitor(company_id: str = Query(None), visit_number: str = Quer
         return {'message': 'Error deleting visitor file', 'status': 500, 'error': str(e)}
       
 @app.delete("/employee/delete")
-async def delete_employee(company_id: str = Query(None), employee_id: str = Query(None)):
+async def delete_employee(company_id=None, employee_id=None):
+    if not os.path.exists(os.path.join(VISITOR_PATH, company_id)):
+      return {'message': 'This {visit_number} not found.', 'status': 400}
+
+    if not company_id:
+        return {'message': 'Please provide the {company_id} query parameter.', 'status': 400}
     if not employee_id:
-        return {'message': 'Please provide the "employee_id" query parameter.', 'status': 400}
+        return {'message': 'Please provide the {employee_id} query parameter.', 'status': 400}
 
     try:
         file_path = os.path.join(EMPLOYEE_PATH, company_id, employee_id)
