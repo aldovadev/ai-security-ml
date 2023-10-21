@@ -8,11 +8,12 @@ import time
 import shutil
 
 import cv2
-from fastapi import FastAPI, File, UploadFile, Form, UploadFile, Response, Query
+from fastapi import FastAPI, File, UploadFile, Form, Response, Query
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import face_recognition
 import starlette
+
 
 VISITOR_PATH = './db_visitor'
 EMPLOYEE_PATH = './db_employee'
@@ -42,6 +43,9 @@ async def default():
 
 @app.post("/recognize")
 async def recognize_img(file: UploadFile = File(...), company_id= None):
+    if not company_id:
+        return {'message': 'Please provide the {company_id} query parameter.', 'status': 400}
+  
     if not os.path.exists(os.path.join(VISITOR_PATH, company_id)):
       os.mkdir(os.path.join(VISITOR_PATH, company_id))
     if not os.path.exists(os.path.join(EMPLOYEE_PATH, company_id)):
@@ -146,14 +150,14 @@ async def reset_employee():
         return {'message': 'Error resetting employee database', 'status': 500, 'error': str(e)}
 
 @app.delete("/visitor/delete")
-async def delete_visitor(company_id: None, visit_number: None):
-    if not os.path.exists(os.path.join(VISITOR_PATH, company_id)):
-      return {'message': 'This {visit_number} not found.', 'status': 400}
-
+async def delete_visitor(company_id= None, visit_number= None):
     if not company_id:
         return {'message': 'Please provide the {company_id} query parameter.', 'status': 400}
     if not visit_number:
         return {'message': 'Please provide the {visit_number} query parameter.', 'status': 400}
+      
+    if not os.path.exists(os.path.join(VISITOR_PATH, company_id)):
+        return {'message': 'This {visit_number} not found.', 'status': 400}
 
     try:
         file_path = os.path.join(VISITOR_PATH, company_id, visit_number)
@@ -168,14 +172,14 @@ async def delete_visitor(company_id: None, visit_number: None):
       
 @app.delete("/employee/delete")
 async def delete_employee(company_id=None, employee_id=None):
-    if not os.path.exists(os.path.join(VISITOR_PATH, company_id)):
-      return {'message': 'This {visit_number} not found.', 'status': 400}
-
     if not company_id:
         return {'message': 'Please provide the {company_id} query parameter.', 'status': 400}
     if not employee_id:
         return {'message': 'Please provide the {employee_id} query parameter.', 'status': 400}
 
+    if not os.path.exists(os.path.join(VISITOR_PATH, company_id)):
+        return {'message': 'This {visit_number} not found.', 'status': 400}
+      
     try:
         file_path = os.path.join(EMPLOYEE_PATH, company_id, employee_id)
         if os.path.exists(file_path + ".png") and os.path.isfile(file_path + ".png"):
