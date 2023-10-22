@@ -128,10 +128,13 @@ async def add_employee(file: UploadFile = File(...), company_id=None, employee_i
     return {'message' : 'Add employee success', 'name' : employee_id, 'status' : 200}
   
 @app.delete("/visitor/reset")
-async def reset_visitor():
+async def reset_visitor(company_id=None):
+    if not company_id:
+        return {'message': 'Please provide the "company_id" query parameter.', 'status': 400}
+  
     try:
-        for filename in os.listdir(VISITOR_PATH):
-            file_path = os.path.join(VISITOR_PATH, filename)
+        for filename in os.listdir(os.join.path(VISITOR_PATH, visit_number)):
+            file_path = os.path.join(VISITOR_PATH, visit_number, filename)
             if os.path.isfile(file_path):
                 os.remove(file_path)
         return {'message': 'Reset visitor database success', 'status': 200}
@@ -139,10 +142,13 @@ async def reset_visitor():
         return {'message': 'Error resetting visitor database', 'status': 500, 'error': str(e)}
 
 @app.delete("/employee/reset")
-async def reset_employee():
+async def reset_employee(company_id=None):
+    if not company_id:
+        return {'message': 'Please provide the "company_id" query parameter.', 'status': 400}
+      
     try:
-        for filename in os.listdir(EMPLOYEE_PATH):
-            file_path = os.path.join(EMPLOYEE_PATH, filename)
+        for filename in os.listdir(os.join.path(EMPLOYEE_PATH, employee_id)):
+            file_path = os.path.join(EMPLOYEE_PATH, employee_id, filename)
             if os.path.isfile(file_path):
                 os.remove(file_path)
         return {'message': 'Reset employee database success', 'status': 200}
