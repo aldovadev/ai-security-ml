@@ -96,7 +96,7 @@ async def add_visitor(file: UploadFile = File(...), company_id=None, visit_numbe
 
     os.remove(file.filename)
 
-    return {'message' : 'Add visitor success', 'name' : visit_number, 'status' : 200}
+    return {'message' : 'Add visitor success', 'companyId' : company_id, 'visitNumber' : visit_number, 'status' : 200}
   
 @app.post("/employee/add")
 async def add_employee(file: UploadFile = File(...), company_id=None, employee_id=None):
