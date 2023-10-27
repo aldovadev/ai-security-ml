@@ -147,6 +147,8 @@ async def reset_employee(company_id=None):
         return {'message': 'Please provide the "company_id" query parameter.', 'status': 400}
       
     try:
+        data = os.join.path(EMPLOYEE_PATH, employee_id)
+        print(data)
         for filename in os.listdir(os.join.path(EMPLOYEE_PATH, employee_id)):
             file_path = os.path.join(EMPLOYEE_PATH, employee_id, filename)
             if os.path.isfile(file_path):
@@ -163,7 +165,7 @@ async def delete_visitor(company_id= None, visit_number= None):
         return {'message': 'Please provide the "visit_number" query parameter.', 'status': 400}
       
     if not os.path.exists(os.path.join(VISITOR_PATH, company_id)):
-        return {'message': 'This {visit_number} not found.', 'status': 400}
+        return {'message': f'This {visit_number} not found.', 'status': 400}
 
     try:
         file_path = os.path.join(VISITOR_PATH, company_id, visit_number)
@@ -184,7 +186,7 @@ async def delete_employee(company_id=None, employee_id=None):
         return {'message': 'Please provide the "employee_id" query parameter.', 'status': 400}
 
     if not os.path.exists(os.path.join(VISITOR_PATH, company_id)):
-        return {'message': 'This {visit_number} not found.', 'status': 400}
+        return {'message': f'This {visit_number} not found.', 'status': 400}
       
     try:
         file_path = os.path.join(EMPLOYEE_PATH, company_id, employee_id)
