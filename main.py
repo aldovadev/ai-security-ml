@@ -106,8 +106,8 @@ async def add_employee(file: UploadFile = File(...), company_id=None, employee_i
     if not employee_id:
         return {'message': 'Please provide the "employee_id" query parameter.', 'status': 400}
   
-    if not os.path.exists(os.path.join(VISITOR_PATH, company_id)):
-      os.mkdir(os.path.join(VISITOR_PATH, company_id))
+    if not os.path.exists(os.path.join(EMPLOYEE_PATH, company_id)):
+      os.mkdir(os.path.join(EMPLOYEE_PATH, company_id))
   
     file.filename = f"{uuid.uuid4()}.png"
     contents = await file.read()
@@ -185,7 +185,7 @@ async def delete_employee(company_id=None, employee_id=None):
     if not employee_id:
         return {'message': 'Please provide the "employee_id" query parameter.', 'status': 400}
 
-    if not os.path.exists(os.path.join(VISITOR_PATH, company_id)):
+    if not os.path.exists(os.path.join(EMPLOYEE_PATH, company_id)):
         return {'message': f'This {visit_number} not found.', 'status': 400}
       
     try:
