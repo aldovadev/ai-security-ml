@@ -186,7 +186,7 @@ async def delete_employee(company_id=None, employee_id=None):
         return {'message': 'Please provide the "employee_id" query parameter.', 'status': 400}
 
     if not os.path.exists(os.path.join(EMPLOYEE_PATH, company_id)):
-        return {'message': f'This {visit_number} not found.', 'status': 400}
+        return {'message': f'This {employee_id} not found.', 'status': 400}
       
     try:
         file_path = os.path.join(EMPLOYEE_PATH, company_id, employee_id)
