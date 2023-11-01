@@ -133,8 +133,8 @@ async def reset_visitor(company_id=None):
         return {'message': 'Please provide the "company_id" query parameter.', 'status': 400}
   
     try:
-        for filename in os.listdir(os.join.path(VISITOR_PATH, visit_number)):
-            file_path = os.path.join(VISITOR_PATH, visit_number, filename)
+        for filename in os.listdir(os.path.join(VISITOR_PATH, company_id)):
+            file_path = os.path.join(VISITOR_PATH, company_id, filename)
             if os.path.isfile(file_path):
                 os.remove(file_path)
         return {'message': 'Reset visitor database success', 'status': 200}
@@ -149,8 +149,8 @@ async def reset_employee(company_id=None):
     try:
         data = os.join.path(EMPLOYEE_PATH, employee_id)
         print(data)
-        for filename in os.listdir(os.join.path(EMPLOYEE_PATH, employee_id)):
-            file_path = os.path.join(EMPLOYEE_PATH, employee_id, filename)
+        for filename in os.listdir(os.path.join(EMPLOYEE_PATH, company_id)):
+            file_path = os.path.join(EMPLOYEE_PATH, company_id, filename)
             if os.path.isfile(file_path):
                 os.remove(file_path)
         return {'message': 'Reset employee database success', 'status': 200}
