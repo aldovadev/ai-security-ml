@@ -58,14 +58,14 @@ async def recognize_img(file: UploadFile = File(...), company_id= None):
     with open(file.filename, "wb") as f:
         f.write(contents)
 
-    visitor_name, visitor_match = recognize(cv2.imread(file.filename), os.path.join(VISITOR_PATH, company_id))
-    employee_name, employee_match = recognize(cv2.imread(file.filename), os.path.join(EMPLOYEE_PATH, company_id))
+    visit_number, visitor_match = recognize(cv2.imread(file.filename), os.path.join(VISITOR_PATH, company_id))
+    employee_id, employee_match = recognize(cv2.imread(file.filename), os.path.join(EMPLOYEE_PATH, company_id))
     os.remove(file.filename)
     
     if visitor_match : 
-      return {'id': visitor_name, "company_id" : company_id, 'type': 'visitor', 'match': visitor_match, 'status' : 200}
+      return {'id': visit_number, "company_id" : company_id, 'type': 'visitor', 'match': visitor_match, 'status' : 200}
     elif employee_match : 
-      return {'id': employee_name,  "company_id" : company_id,  'type': 'employee', 'match': employee_match, 'status' : 200}
+      return {'id': employee_id,  "company_id" : company_id,  'type': 'employee', 'match': employee_match, 'status' : 200}
     else  : 
       return {'id': "unknown",  "company_id" : company_id, 'type': 'unknown', 'match': 'false', 'status' : 404}
   
