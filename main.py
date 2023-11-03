@@ -147,7 +147,7 @@ async def reset_employee(company_id=None):
         return {'message': 'Please provide the "company_id" query parameter.', 'status': 400}
       
     try:
-        data = os.join.path(EMPLOYEE_PATH, employee_id)
+        data = os.join.path(EMPLOYEE_PATH, company_id)
         print(data)
         for filename in os.listdir(os.path.join(EMPLOYEE_PATH, company_id)):
             file_path = os.path.join(EMPLOYEE_PATH, company_id, filename)
